@@ -1,0 +1,1 @@
+start vcvars32.bat
