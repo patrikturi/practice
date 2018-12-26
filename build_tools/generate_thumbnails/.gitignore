@@ -1,0 +1,8 @@
+task.txt
+*.png
+.doit.db*
+make/out/
+doit/out/
+gradle/.gradle/
+gradle/gradle/
+gradle/build/

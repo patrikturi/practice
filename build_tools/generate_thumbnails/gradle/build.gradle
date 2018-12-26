@@ -1,0 +1,58 @@
+
+ext {
+    origImagesPath = "$rootDir/../images"
+    thumbOutputPath = "$buildDir/thumb"
+    listFilePath = "$buildDir/files.txt"
+}
+
+task thumb(dependsOn: 'files_list') << {
+}
+
+task files_list(dependsOn: 'convert') {
+
+    doFirst {
+        delete file(listFilePath)
+    }
+
+    def files = fileTree(origImagesPath).filter { it.isFile() }.files.name
+    inputs.files( files.collect{ file("$thumbOutputPath/$it") } )
+    outputs.file( file(listFilePath) )
+    
+    doLast {
+        for(name in files) {
+            exec {
+                executable "bash"
+                args "-c", "ls -sh '$thumbOutputPath/$name' >> '$listFilePath'"
+            }
+        }
+    }
+}
+
+task convert() {
+    doFirst {
+        mkdir thumbOutputPath
+    }
+
+    def files = fileTree(origImagesPath).filter { it.isFile() }.files.name
+    inputs.files( files.collect{ file("$origImagesPath/$it") } )
+    outputs.files( files.collect{ file("$thumbOutputPath/$it") } )
+
+    doLast {
+        for(name in files) {
+            exec {
+                executable "bash"
+                args "-c", "convert -resize '100x100' '$origImagesPath/$name' '${buildDir}/thumb/$name'"
+            }
+        }
+    }
+}
+
+task clean() {
+    doLast {
+        delete listFilePath
+        def files = fileTree(origImagesPath).filter { it.isFile() }.files.name
+        delete files.collect{ file("$thumbOutputPath/$it") }
+        delete thumbOutputPath
+        delete 'build/'
+    }
+}
