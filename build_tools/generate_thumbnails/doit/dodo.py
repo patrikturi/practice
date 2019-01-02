@@ -1,26 +1,25 @@
 import os
+import glob
 
-ORIG_IMAGES_PATH = '../images'
-THUMB_OUTPUT_PATH = 'out/thumb'
+IMAGES_SRC_GLOB = '../images/*.png'
+IMAGES_SRC_PATH = '../images'
+THUMB_DEST_PATH = 'out/thumb'
 FILE_LIST = 'out/files.txt'
 
-file_names = os.listdir(ORIG_IMAGES_PATH)
+orig_file_paths = glob.glob(IMAGES_SRC_GLOB)
+thumb_file_paths = [ path.replace(IMAGES_SRC_PATH, THUMB_DEST_PATH) for path in orig_file_paths ]
 
-thumb_file_paths = [ '{}/{}'.format(THUMB_OUTPUT_PATH, name) for name in file_names ]
-
-def create_file_list():
+def create_file_list(dependencies):
     if os.path.exists(FILE_LIST):
         os.remove(FILE_LIST)
     
     with open(FILE_LIST, 'w') as file:
-        for file_path in thumb_file_paths:
+        for file_path in dependencies:
             size = os.path.getsize(file_path)/1024.0
             file.write('{:.1f} {}\n'.format(size, file_path))
 
 
-def task_file_list():  
-    #actions = [ 'echo `ls -sh {} >> {}`'.format(file_path, FILE_LIST) for file_path in thumb_file_paths ]
-
+def task_file_list():
     return {
         'file_dep': thumb_file_paths,
         'targets': [FILE_LIST],
@@ -34,16 +33,13 @@ def task_convert():
         os.mkdir('out')
     if not os.path.exists('out/thumb'):
         os.mkdir('out/thumb')
-    orig_file_paths = [ '{}/{}'.format(ORIG_IMAGES_PATH, name) for name in file_names ]
-    dest_file_paths = [ '{}/{}'.format(THUMB_OUTPUT_PATH, name) for name in file_names ]
-    
-    orig_to_dest = zip(orig_file_paths, dest_file_paths)
-    
+
+    orig_to_dest = zip(orig_file_paths, thumb_file_paths)
     actions = [ 'convert -resize "100x100" {} {}'.format(orig_path, dest_path) for orig_path, dest_path in orig_to_dest ]
 
     return {
         'file_dep': orig_file_paths,
-        'targets': dest_file_paths,
+        'targets': thumb_file_paths,
         'actions': actions,
         'clean': True
     }
