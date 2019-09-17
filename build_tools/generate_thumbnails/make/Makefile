@@ -1,12 +1,13 @@
 ORIG_IMAGES_PATH = ../images
 THUMB_FILES = $(shell find $(ORIG_IMAGES_PATH) -type f -iname "*.png" | sed 's/..\/images/out\/thumb/g')
-CONVERT_CMD = convert -resize "100x100" $(ORIG_IMAGES_PATH)/$*.png $@
+CONVERT_CMD = magick $(ORIG_IMAGES_PATH)/$*.png -resize "100x100" $@
 MSG = @echo -e "\nUpdating thumbnail" $@
 
 
 all: out/files.txt
 
 out/files.txt: ${THUMB_FILES}
+	@echo -e "Updating files.txt"
 	-rm out/files.txt
 	@for i in $(THUMB_FILES); do	  \
 		echo `ls -sh $$i >> out/files.txt`; \

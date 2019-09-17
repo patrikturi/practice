@@ -35,7 +35,7 @@ def task_convert():
         os.mkdir('out/thumb')
 
     orig_to_dest = zip(orig_file_paths, thumb_file_paths)
-    actions = [ 'convert -resize "100x100" {} {}'.format(orig_path, dest_path) for orig_path, dest_path in orig_to_dest ]
+    actions = [ 'magick {} -resize "100x100" {}'.format(orig_path, dest_path) for orig_path, dest_path in orig_to_dest ]
 
     return {
         'file_dep': orig_file_paths,
