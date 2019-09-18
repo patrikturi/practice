@@ -41,6 +41,7 @@ task convert() {
         for(name in files) {
             exec {
                 executable "bash"
+				println("Updating $name")
                 args "-c", "magick '$origImagesPath/$name' -resize '100x100' '${buildDir}/thumb/$name'"
             }
         }
