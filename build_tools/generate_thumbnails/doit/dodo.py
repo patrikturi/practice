@@ -1,13 +1,16 @@
 import os
 import glob
 
+from fprules import file_pattern 
+
 IMAGES_SRC_GLOB = '../images/*.png'
+THUMB_DEST_GLOB = 'out/thumb/*.png'
 IMAGES_SRC_PATH = '../images'
 THUMB_DEST_PATH = 'out/thumb'
 FILE_LIST = 'out/files.txt'
 
 orig_file_paths = glob.glob(IMAGES_SRC_GLOB)
-thumb_file_paths = [ path.replace(IMAGES_SRC_PATH, THUMB_DEST_PATH) for path in orig_file_paths ]
+thumb_file_paths = [ os.path.normpath(path.replace(IMAGES_SRC_PATH, THUMB_DEST_PATH)) for path in orig_file_paths ]
 
 def create_file_list(dependencies):
     if os.path.exists(FILE_LIST):
@@ -34,12 +37,11 @@ def task_convert():
     if not os.path.exists('out/thumb'):
         os.mkdir('out/thumb')
 
-    orig_to_dest = zip(orig_file_paths, thumb_file_paths)
-    actions = [ 'magick {} -resize "100x100" {}'.format(orig_path, dest_path) for orig_path, dest_path in orig_to_dest ]
-
-    return {
-        'file_dep': orig_file_paths,
-        'targets': thumb_file_paths,
-        'actions': actions,
-        'clean': True
-    }
+    for data in file_pattern(IMAGES_SRC_GLOB, THUMB_DEST_GLOB.replace('*', '%')):
+        yield {
+            'name': data.name,
+            'file_dep': [data.src_path],
+            'actions': ['magick {} -resize "100x100" {}'.format(data.src_path, data.dst_path)],
+            'targets': [data.dst_path],
+            'clean': True
+        }
