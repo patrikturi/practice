@@ -5,6 +5,10 @@ DEFAULT_DELIMITER = ','
 
 class StringCalculator:
 
+    def __init__(self, logger, webservice):
+        self.logger = logger
+        self.webservice = webservice
+
     def add(self, numbers):
         if numbers == '':
             return 0
@@ -31,4 +35,10 @@ class StringCalculator:
                 continue
             numbers_list.append(num)
 
-        return sum(numbers_list)
+        result = sum(numbers_list)
+        try:
+            self.logger.write(f'{result}\n')
+        except RuntimeError as error:
+            self.webservice.logging_failed(str(error))
+
+        return result

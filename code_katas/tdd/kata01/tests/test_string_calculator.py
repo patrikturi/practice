@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 
 from string_calculator import StringCalculator
 
@@ -6,7 +7,12 @@ from string_calculator import StringCalculator
 class TestStringCalculator(unittest.TestCase):
 
     def setUp(self):
-        self.calc = StringCalculator()
+        self.logger = Mock(spec_set=['write'])
+        self.webservice = Mock(spec_set=['logging_failed'])
+        self.calc = StringCalculator(self.logger, self.webservice)
+
+        self.valid_input = '1,2'
+        self.sum_of_valid_input = 3
 
     def test_add_emptyString_returnsZero(self):
         self.assertEqual(0, self.calc.add(''))
@@ -40,3 +46,13 @@ class TestStringCalculator(unittest.TestCase):
 
     def test_add_multipleDelimitersMultiChar_returnsSum(self):
         self.assertEqual(6, self.calc.add('//[*][%%]\n1*2%%3'))
+
+    def test_add_validInput_logsResult(self):
+        self.calc.add(self.valid_input)
+        self.logger.write.assert_called_with('{}\n'.format(self.sum_of_valid_input))
+
+    def test_add_loggerRaisesException_notifiesWebservice(self):
+        logging_error_message = 'Logging failed'
+        self.logger.write.side_effect = RuntimeError(logging_error_message)
+        self.calc.add(self.valid_input)
+        self.webservice.logging_failed.assert_called_with(logging_error_message)
