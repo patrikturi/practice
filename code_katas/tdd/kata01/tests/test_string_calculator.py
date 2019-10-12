@@ -4,6 +4,8 @@ from unittest.mock import Mock
 from string_calculator import StringCalculator
 
 
+# Task part 1: https://osherove.com/tdd-kata-1
+# part 2: https://osherove.com/tdd-kata-2
 class TestStringCalculator(unittest.TestCase):
 
     def setUp(self):
