@@ -12,10 +12,7 @@ class GameReferenceTests(unittest.TestCase):
 
     def setUp(self):
         self.logger = BufferedLogger()
-        self.game = Game(self.logger)
-        self.game.add('Chet')
-        self.game.add('Pat')
-        self.game.add('Sue')
+        self.game = Game(['Chet', 'Pat', 'Sue'], self.logger)
 
     def test_seed5(self):
         self.game.play(5)

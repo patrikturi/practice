@@ -15,7 +15,7 @@ class BufferedLogger:
         self.logs.append(message)
 
 class Game:
-    def __init__(self, logger=ConsoleLogger()):
+    def __init__(self, players, logger=ConsoleLogger()):
         self.logger = logger
         self.players = []
         self.places = [0] * 6
@@ -29,6 +29,9 @@ class Game:
 
         self.current_player = 0
         self.is_getting_out_of_penalty_box = False
+
+        for player in players:
+            self.add(player)
 
         for i in range(50):
             self.pop_questions.append("Pop Question %s" % i)
@@ -57,39 +60,40 @@ class Game:
     def how_many_players(self):
         return len(self.players)
 
+    def step_player(self, roll):
+        self.places[self.current_player] = self.places[self.current_player] + roll
+        if self.places[self.current_player] > 11:
+            self.places[self.current_player] = self.places[self.current_player] - 12
+
+        self.logger.print(self.players[self.current_player] + \
+                    '\'s new location is ' + \
+                    str(self.places[self.current_player]))
+
+    def set_getting_out(self, is_true):
+        self.is_getting_out_of_penalty_box = is_true
+        is_true_str = '' if is_true else 'not '
+        self.logger.print("%s is %sgetting out of the penalty box" % (self.players[self.current_player], is_true_str))
+
     def roll(self, roll):
         self.logger.print("%s is the current player" % self.players[self.current_player])
         self.logger.print("They have rolled a %s" % roll)
 
         if self.in_penalty_box[self.current_player]:
             if roll % 2 != 0:
-                self.is_getting_out_of_penalty_box = True
+                self.set_getting_out(True)
 
-                self.logger.print("%s is getting out of the penalty box" % self.players[self.current_player])
-                self.places[self.current_player] = self.places[self.current_player] + roll
-                if self.places[self.current_player] > 11:
-                    self.places[self.current_player] = self.places[self.current_player] - 12
+                self.step_player(roll)
 
-                self.logger.print(self.players[self.current_player] + \
-                            '\'s new location is ' + \
-                            str(self.places[self.current_player]))
-                self.logger.print("The category is %s" % self._current_category)
                 self._ask_question()
             else:
-                self.logger.print("%s is not getting out of the penalty box" % self.players[self.current_player])
-                self.is_getting_out_of_penalty_box = False
+                self.set_getting_out(False)
         else:
-            self.places[self.current_player] = self.places[self.current_player] + roll
-            if self.places[self.current_player] > 11:
-                self.places[self.current_player] = self.places[self.current_player] - 12
+            self.step_player(roll)
 
-            self.logger.print(self.players[self.current_player] + \
-                        '\'s new location is ' + \
-                        str(self.places[self.current_player]))
-            self.logger.print("The category is %s" % self._current_category)
             self._ask_question()
 
     def _ask_question(self):
+        self.logger.print("The category is %s" % self._current_category)
         if self._current_category == 'Pop': self.logger.print(self.pop_questions.pop(0))
         if self._current_category == 'Science': self.logger.print(self.science_questions.pop(0))
         if self._current_category == 'Sports': self.logger.print(self.sports_questions.pop(0))
@@ -108,40 +112,37 @@ class Game:
         if self.places[self.current_player] == 10: return 'Sports'
         return 'Rock'
 
+    def next_player(self):
+        self.current_player += 1
+        if self.current_player == len(self.players):
+            self.current_player = 0
+
+    def correct_answer(self):
+        self.logger.print("Answer was correct!!!!")
+        self.purses[self.current_player] += 1
+        self.logger.print(self.players[self.current_player] + \
+            ' now has ' + \
+            str(self.purses[self.current_player]) + \
+            ' Gold Coins.')
+
     def was_correctly_answered(self):
         if self.in_penalty_box[self.current_player]:
             if self.is_getting_out_of_penalty_box:
-                self.logger.print('Answer was correct!!!!')
-                self.purses[self.current_player] += 1
-                self.logger.print(self.players[self.current_player] + \
-                    ' now has ' + \
-                    str(self.purses[self.current_player]) + \
-                    ' Gold Coins.')
+                self.correct_answer()
 
                 winner = self._did_player_win()
-                self.current_player += 1
-                if self.current_player == len(self.players): self.current_player = 0
+                self.next_player()
 
                 return winner
             else:
-                self.current_player += 1
-                if self.current_player == len(self.players): self.current_player = 0
+                self.next_player()
                 return True
 
-
-
         else:
-
-            self.logger.print("Answer was corrent!!!!")
-            self.purses[self.current_player] += 1
-            self.logger.print(self.players[self.current_player] + \
-                ' now has ' + \
-                str(self.purses[self.current_player]) + \
-                ' Gold Coins.')
+            self.correct_answer()
 
             winner = self._did_player_win()
-            self.current_player += 1
-            if self.current_player == len(self.players): self.current_player = 0
+            self.next_player()
 
             return winner
 
@@ -150,8 +151,7 @@ class Game:
         self.logger.print(self.players[self.current_player] + " was sent to the penalty box")
         self.in_penalty_box[self.current_player] = True
 
-        self.current_player += 1
-        if self.current_player == len(self.players): self.current_player = 0
+        self.next_player()
         return True
 
     def _did_player_win(self):
@@ -159,26 +159,21 @@ class Game:
 
     def play(self, seed_value):
 
+        no_winner = True
         seed(seed_value)
-        not_a_winner = False
 
-        while True:
+        while no_winner:
             self.roll(randrange(5) + 1)
 
             if randrange(9) == 7:
-                not_a_winner = self.wrong_answer()
+                no_winner = self.wrong_answer()
             else:
-                not_a_winner = self.was_correctly_answered()
+                no_winner = self.was_correctly_answered()
 
-            if not not_a_winner: break
 
 
 if __name__ == '__main__':
 
-    game = Game()
-
-    game.add('Chet')
-    game.add('Pat')
-    game.add('Sue')
+    game = Game(['Chet', 'Pat', 'Sue'])
 
     game.play(122342)
