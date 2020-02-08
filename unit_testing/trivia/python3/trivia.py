@@ -3,10 +3,12 @@
 from random import randrange, seed
 from player import Player
 
+
 class ConsoleLogger:
 
     def print(self, message):
         print(message)
+
 
 class BufferedLogger:
     def __init__(self):
@@ -14,6 +16,7 @@ class BufferedLogger:
 
     def print(self, message):
         self.logs.append(message)
+
 
 class Game:
     def __init__(self, player_names, logger=ConsoleLogger()):
@@ -39,27 +42,14 @@ class Game:
             self.rock_questions.append("Rock Question %s" % i)
 
     def is_playable(self):
-        return self.how_many_players >= 2
+        return len(self.players) >= 2
 
     def add(self, player_name):
-        new_player = Player(player_name)
+        new_player = Player(player_name, self.logger)
         self.players.append(new_player)
 
         self.logger.print(player_name + " was added")
         self.logger.print("They are player number %s" % len(self.players))
-
-    @property
-    def how_many_players(self):
-        return len(self.players)
-
-    def step_player(self, roll):
-        self.current_player.position = self.current_player.position + roll
-        if self.current_player.position > 11:
-            self.current_player.position = self.current_player.position - 12
-
-        self.logger.print(self.current_player.name + \
-                    '\'s new location is ' + \
-                    str(self.current_player.position))
 
     def roll(self, roll):
         self.logger.print("%s is the current player" % self.current_player.name)
@@ -73,7 +63,7 @@ class Game:
             if not self.is_getting_out_of_penalty_box:
                 return
 
-        self.step_player(roll)
+        self.current_player.step(roll)
 
         self._ask_question()
 
@@ -112,25 +102,17 @@ class Game:
 
     def correct_answer(self):
         self.logger.print("Answer was correct!!!!")
-        self.current_player.coins += 1
-        self.logger.print(self.current_player.name + \
-            ' now has ' + \
-            str(self.current_player.coins) + \
-            ' Gold Coins.')
+        self.current_player.add_coin()
 
     def was_correctly_answered(self):
         if self.current_player.in_penalty_box \
             and not self.is_getting_out_of_penalty_box:
 
-            self.next_player()
             return False
 
         self.correct_answer()
 
-        winner = self._did_player_win()
-        self.next_player()
-
-        return winner
+        return self.current_player.is_winner
 
     def wrong_answer(self):
         self.logger.print('Question was incorrectly answered')
@@ -138,9 +120,6 @@ class Game:
         self.current_player.in_penalty_box = True
 
         self.next_player()
-
-    def _did_player_win(self):
-        return self.current_player.coins == 6
 
     def play(self, seed_value):
 
@@ -154,6 +133,7 @@ class Game:
                 self.wrong_answer()
             else:
                 winner_found = self.was_correctly_answered()
+                self.next_player()
 
 
 if __name__ == '__main__':
