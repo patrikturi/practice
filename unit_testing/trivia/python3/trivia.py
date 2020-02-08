@@ -28,6 +28,7 @@ class Game:
         self.sports_questions = []
         self.rock_questions = []
 
+        # FIXME: this should be a property of the Player
         self.is_getting_out_of_penalty_box = False
 
         for player in player_names:
@@ -41,6 +42,7 @@ class Game:
             self.sports_questions.append("Sports Question %s" % i)
             self.rock_questions.append("Rock Question %s" % i)
 
+    # FIXME: dead code, kept here to remind me to implement this
     def is_playable(self):
         return len(self.players) >= 2
 
@@ -105,6 +107,7 @@ class Game:
         self.current_player.add_coin()
 
     def was_correctly_answered(self):
+        # FIXME: currently in_penalty_box is never reset to False
         if self.current_player.in_penalty_box \
             and not self.is_getting_out_of_penalty_box:
 
