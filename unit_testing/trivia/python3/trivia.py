@@ -24,7 +24,7 @@ class Trivia:
         self.logger = logger
         self.players = []
         self.questions = Questions(logger)
-        self.last_question = ''
+        self.last_question: str = None
         self.current_player: Player = None
         self.winner: Player = None
 
@@ -32,10 +32,6 @@ class Trivia:
             self._create_player(player)
         self.current_player_index = 0
         self.current_player = self.players[0]
-
-    # FIXME: dead code, kept here to remind me to implement this
-    def is_playable(self):
-        return len(self.players) >= 2
 
     def _create_player(self, player_name):
         new_player = Player(player_name, self.logger)
@@ -50,9 +46,12 @@ class Trivia:
 
         self.current_player.rolled(roll)
 
-        if self.current_player.is_leaving_penalty_box:
+        if not self.current_player.in_penalty_box \
+            or self.current_player.is_leaving_penalty_box:
             self.current_player.step(roll)
             self.last_question = self.questions.ask_next(self.current_player.position)
+        else:
+            self.last_question = None
 
     def next_player(self):
         self.current_player_index += 1
@@ -63,14 +62,17 @@ class Trivia:
     def handle_player(self, first_roll, second_roll):
         self.roll(first_roll)
 
-        if second_roll == 7:
-            self.current_player.wrong_answer()
-        else:
-            self.current_player.correct_answer()
+        if self.last_question:
+            if second_roll == 7:
+                self.current_player.wrong_answer()
+            else:
+                self.current_player.correct_answer()
 
         return self.current_player if self.current_player.is_winner else None
 
     def play(self, seed_value):
+        if len(self.players) < 2:
+            raise ValueError('Not enough players.')
 
         seed(seed_value)
 

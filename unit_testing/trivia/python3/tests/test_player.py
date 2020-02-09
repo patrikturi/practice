@@ -67,3 +67,22 @@ class PlayerTests(unittest.TestCase):
         self.assertFalse(self.player.in_penalty_box)
         self.player.wrong_answer()
         self.assertTrue(self.player.in_penalty_box)
+
+    def test_playerGetsOutOfPenaltyBox(self):
+        # Player in penalty box rolls even and gets out
+        self.player.in_penalty_box = True
+        self.player.rolled(3)
+        self.player.correct_answer()
+        self.assertEqual(1, self.player.coins)
+
+        # Player rolls odd but still gets a coin because he is not in the penalty box
+        self.player.rolled(2)
+        self.player.correct_answer()
+        self.assertEqual(2, self.player.coins)
+
+    def test_playerStaysInPenaltyBox(self):
+        # Player stays in penalty box because he rolled even and gets no coin
+        self.player.in_penalty_box = True
+        self.player.rolled(2)
+        self.player.correct_answer()
+        self.assertEqual(0, self.player.coins)

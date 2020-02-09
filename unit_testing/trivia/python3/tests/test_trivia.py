@@ -69,6 +69,16 @@ class TriviaTests(unittest.TestCase):
         correct_answer.assert_not_called()
         wrong_answer.assert_called()
 
+    def test_handlePlayer_notGettingOutOfPenalty_noQuestionAsked(self):
+        correct_answer = Mock()
+        wrong_answer = Mock()
+        self.game.current_player.correct_answer = correct_answer
+        self.game.current_player.wrong_answer = wrong_answer
+        self.game.current_player.in_penalty_box = True
+        self.game.handle_player(2, 1)
+        correct_answer.assert_not_called()
+        wrong_answer.assert_not_called()
+
     def test_play_seed5_ChetWins(self):
         self.game.play(5)
         self.assertEqual('Chet', self.game.winner.name)
@@ -84,3 +94,12 @@ class TriviaTests(unittest.TestCase):
     def test_play_seed122342_ChetWins(self):
         self.game.play(122342)
         self.assertEqual('Chet', self.game.winner.name)
+
+    def test_play_notEnoughPlayers(self):
+        game = Trivia(['Bob'])
+        self.assertRaises(ValueError, game.play, 5)
+
+    def test_play_minPlayers(self):
+        game = Trivia(['Bob', 'Jack'])
+        game.play(5)
+        self.assertEqual('Jack', game.winner.name)

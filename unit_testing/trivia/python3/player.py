@@ -35,12 +35,12 @@ class Player:
             self.is_leaving_penalty_box = True
 
     def correct_answer(self):
-        # FIXME: currently in_penalty_box is never reset to False
         if not self.in_penalty_box \
             or self.is_leaving_penalty_box:
 
             self.logger.print("Answer was correct!!!!")
             self.add_coin()
+            self.in_penalty_box = False
 
     def wrong_answer(self):
         self.logger.print('Question was incorrectly answered')
