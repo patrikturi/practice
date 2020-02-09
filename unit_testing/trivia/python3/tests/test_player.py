@@ -45,21 +45,6 @@ class PlayerTests(unittest.TestCase):
         self.player.coins += COINS_TO_WIN + 1
         self.assertTrue(self.player.is_winner)
 
-    def test_rolled_oneShouldGetOutOfPenalty(self):
-        self.player.in_penalty_box = True
-        self.player.rolled(1)
-        self.assertTrue(self.player.is_leaving_penalty_box)
-
-    def test_rolled_twoShouldNotGetOutOfPenalty(self):
-        self.player.in_penalty_box = True
-        self.player.rolled(2)
-        self.assertFalse(self.player.is_leaving_penalty_box)
-
-    def test_rolled_twoShouldStayOutOfPenalty(self):
-        self.player.in_penalty_box = False
-        self.player.rolled(2)
-        self.assertTrue(self.player.is_leaving_penalty_box)
-
     def test_correctAnswer_inPenaltyNotGettingOut_getsNoCoins(self):
         self.player.in_penalty_box = True
         self.player.is_leaving_penalty_box = False

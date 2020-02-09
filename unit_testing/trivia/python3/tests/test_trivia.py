@@ -20,6 +20,7 @@ class TriviaTests(unittest.TestCase):
         self.game.roll(4)
         self.assertEqual(0, self.game.current_player.position)
         self.assertFalse(self.game.last_question)
+        self.assertFalse(self.game.current_player.is_leaving_penalty_box)
 
     def test_roll_inPenaltyBoxRolledOdd_stepsForwardAndAsksQuestion(self):
         self.assertFalse(self.game.last_question)
@@ -27,6 +28,7 @@ class TriviaTests(unittest.TestCase):
         self.game.roll(3)
         self.assertEqual(3, self.game.current_player.position)
         self.assertTrue(self.game.last_question)
+        self.assertTrue(self.game.current_player.is_leaving_penalty_box)
 
     def test_nextPlayer(self):
         self.assertEqual('Chet', self.game.current_player.name)
