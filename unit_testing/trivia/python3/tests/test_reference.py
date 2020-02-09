@@ -1,6 +1,6 @@
 import unittest
 
-from trivia import Game, BufferedLogger
+from trivia import Trivia, BufferedLogger
 
 
 def get_refs(seed_value):
@@ -12,7 +12,7 @@ class GameReferenceTests(unittest.TestCase):
 
     def setUp(self):
         self.logger = BufferedLogger()
-        self.game = Game(['Chet', 'Pat', 'Sue'], self.logger)
+        self.game = Trivia(['Chet', 'Pat', 'Sue'], self.logger)
 
     def test_seed5(self):
         self.game.play(5)

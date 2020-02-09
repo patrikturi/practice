@@ -19,15 +19,17 @@ class BufferedLogger:
         self.logs.append(message)
 
 
-class Game:
+class Trivia:
     def __init__(self, player_names, logger=ConsoleLogger()):
         self.logger = logger
         self.players = []
         self.questions = Questions(logger)
         self.last_question = ''
+        self.current_player: Player = None
+        self.winner: Player = None
 
         for player in player_names:
-            self.create_player(player)
+            self._create_player(player)
         self.current_player_index = 0
         self.current_player = self.players[0]
 
@@ -35,7 +37,7 @@ class Game:
     def is_playable(self):
         return len(self.players) >= 2
 
-    def create_player(self, player_name):
+    def _create_player(self, player_name):
         new_player = Player(player_name, self.logger)
         self.players.append(new_player)
 
@@ -58,25 +60,29 @@ class Game:
             self.current_player_index = 0
         self.current_player = self.players[self.current_player_index]
 
+    def handle_player(self, first_roll, second_roll):
+        self.roll(first_roll)
+
+        if second_roll == 7:
+            self.current_player.wrong_answer()
+        else:
+            self.current_player.correct_answer()
+
+        return self.current_player if self.current_player.is_winner else None
+
     def play(self, seed_value):
 
-        winner_found = False
         seed(seed_value)
 
-        while not winner_found:
-            self.roll(randrange(5) + 1)
-
-            if randrange(9) == 7:
-                self.current_player.wrong_answer()
-            else:
-                self.current_player.correct_answer()
-
-            winner_found = self.current_player.is_winner
+        while True:
+            self.winner = self.handle_player(randrange(5) + 1, randrange(9))
+            if self.winner:
+                break
             self.next_player()
 
 
 if __name__ == '__main__':
 
-    game = Game(['Chet', 'Pat', 'Sue'])
+    game = Trivia(['Chet', 'Pat', 'Sue'])
 
     game.play(122342)
