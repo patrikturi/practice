@@ -6,7 +6,8 @@ class Questions:
 
     CATEGORIES = ['Pop', 'Science', 'Sports', 'Rock']
 
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self._questions = defaultdict(list)
 
         for i in range(50):
@@ -23,3 +24,11 @@ class Questions:
 
         category_index = position % len(cls.CATEGORIES)
         return cls.CATEGORIES[category_index]
+
+    def ask_next(self, position):
+        current_category = self.get_category(position)
+        self.logger.print("The category is %s" % current_category)
+        current_question = self.get_next(current_category)
+
+        self.logger.print(current_question)
+        return current_question

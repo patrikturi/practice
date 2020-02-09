@@ -44,3 +44,41 @@ class PlayerTests(unittest.TestCase):
     def test_isWinner_moreCoinsReturnsTrue(self):
         self.player.coins += COINS_TO_WIN + 1
         self.assertTrue(self.player.is_winner)
+
+    def test_rolled_oneShouldGetOutOfPenalty(self):
+        self.player.in_penalty_box = True
+        self.player.rolled(1)
+        self.assertTrue(self.player.is_leaving_penalty_box)
+
+    def test_rolled_twoShouldNotGetOutOfPenalty(self):
+        self.player.in_penalty_box = True
+        self.player.rolled(2)
+        self.assertFalse(self.player.is_leaving_penalty_box)
+
+    def test_rolled_twoShouldStayOutOfPenalty(self):
+        self.player.in_penalty_box = False
+        self.player.rolled(2)
+        self.assertTrue(self.player.is_leaving_penalty_box)
+
+    def test_correctAnswer_inPenaltyNotGettingOut_getsNoCoins(self):
+        self.player.in_penalty_box = True
+        self.player.is_leaving_penalty_box = False
+        self.player.correct_answer()
+        self.assertEqual(0, self.player.coins)
+
+    def test_correctAnswer_notInPenalty_getsACoin(self):
+        self.player.in_penalty_box = False
+        self.player.is_leaving_penalty_box = False
+        self.player.correct_answer()
+        self.assertEqual(1, self.player.coins)
+
+    def test_correctAnswer_inPenaltyIsGettingOut_getsACoin(self):
+        self.player.in_penalty_box = True
+        self.player.is_leaving_penalty_box = True
+        self.player.correct_answer()
+        self.assertEqual(1, self.player.coins)
+
+    def test_wrongAnswer_playerSentToPenaltyBox(self):
+        self.assertFalse(self.player.in_penalty_box)
+        self.player.wrong_answer()
+        self.assertTrue(self.player.in_penalty_box)

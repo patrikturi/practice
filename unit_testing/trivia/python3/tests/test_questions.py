@@ -2,12 +2,13 @@ import unittest
 
 from const import BOARD_SIZE
 from questions import Questions
+from trivia import BufferedLogger
 
 
 class QuestionTests(unittest.TestCase):
 
     def setUp(self):
-        self.questions = Questions()
+        self.questions = Questions(BufferedLogger())
 
     def test_Category(self):
         self.assertEqual('Pop', Questions.get_category(0))
@@ -45,3 +46,10 @@ class QuestionTests(unittest.TestCase):
 
     def assertNextQuestion(self, category, index):
         self.assertEqual(f'{category} Question {index}', self.questions.get_next(category))
+
+    def test_askNext(self):
+        self.assertEqual('Sports Question 0', self.questions.ask_next(2))
+        self.assertEqual('Science Question 0', self.questions.ask_next(1))
+        self.assertEqual('Sports Question 1', self.questions.ask_next(2))
+        self.assertEqual('Pop Question 0', self.questions.ask_next(0))
+        self.assertEqual('Rock Question 0', self.questions.ask_next(7))
