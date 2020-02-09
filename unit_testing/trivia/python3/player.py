@@ -1,10 +1,11 @@
-from const import COINS_TO_WIN, BOARD_SIZE
+from const import COINS_TO_WIN, KID_COINS_TO_WIN, BOARD_SIZE, PlayerType
 
 
 class Player:
 
-    def __init__(self, player_name, logger):
+    def __init__(self, player_name, logger, player_type=PlayerType.NORMAL):
         self.name = player_name
+        self.type = player_type
         self.logger = logger
         self.position = 0
         self.coins = 0
@@ -13,7 +14,8 @@ class Player:
 
     @property
     def is_winner(self):
-        return self.coins >= COINS_TO_WIN
+        coins_required = KID_COINS_TO_WIN if self.type == PlayerType.KID else COINS_TO_WIN
+        return self.coins >= coins_required
 
     def step(self, count):
         self.position += count
@@ -42,7 +44,10 @@ class Player:
             self.add_coin()
             self.in_penalty_box = False
 
-    def wrong_answer(self):
+    def wrong_answer(self, question):
         self.logger.print('Question was incorrectly answered')
-        self.logger.print(self.name + " was sent to the penalty box")
-        self.in_penalty_box = True
+        
+        category = question.split(' ')[0]
+        if self.type != PlayerType.KID or category.lower() == 'pop':
+            self.logger.print(self.name + " was sent to the penalty box")
+            self.in_penalty_box = True

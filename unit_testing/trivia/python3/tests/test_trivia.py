@@ -1,6 +1,7 @@
 import unittest
 from mock import Mock
 
+from const import PlayerType
 from trivia import Trivia
 
 
@@ -10,24 +11,22 @@ class TriviaTests(unittest.TestCase):
         self.game = Trivia(['Chet', 'Pat', 'Sue'])
 
     def test_roll_stepsForwardAndAsksQuestion(self):
-        self.assertFalse(self.game.last_question)
-        self.game.roll(2)
+        question = self.game.roll(2)
         self.assertEqual(2, self.game.current_player.position)
-        self.assertTrue(self.game.last_question)
+        self.assertTrue(question)
 
     def test_roll_inPenaltyBoxRolledEven_doesNotMoveNorAskQuestion(self):
         self.game.current_player.in_penalty_box = True
-        self.game.roll(4)
+        question = self.game.roll(4)
         self.assertEqual(0, self.game.current_player.position)
-        self.assertFalse(self.game.last_question)
+        self.assertIsNone(question)
         self.assertFalse(self.game.current_player.is_leaving_penalty_box)
 
     def test_roll_inPenaltyBoxRolledOdd_stepsForwardAndAsksQuestion(self):
-        self.assertFalse(self.game.last_question)
         self.game.current_player.in_penalty_box = True
-        self.game.roll(3)
+        question = self.game.roll(3)
         self.assertEqual(3, self.game.current_player.position)
-        self.assertTrue(self.game.last_question)
+        self.assertTrue(question)
         self.assertTrue(self.game.current_player.is_leaving_penalty_box)
 
     def test_nextPlayer(self):
@@ -94,6 +93,11 @@ class TriviaTests(unittest.TestCase):
     def test_play_seed122342_ChetWins(self):
         self.game.play(122342)
         self.assertEqual('Chet', self.game.winner.name)
+
+    def test_play_withKids_seed101_ChetWins(self):
+        game = Trivia(['Chet', 'Pat', 'Sue', ('Kid1', PlayerType.KID), ('Kid2', PlayerType.KID)])
+        game.play(101)
+        self.assertEqual('Kid1', game.winner.name)
 
     def test_play_notEnoughPlayers(self):
         game = Trivia(['Bob'])

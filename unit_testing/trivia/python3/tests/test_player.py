@@ -1,20 +1,20 @@
 import unittest
 
-from const import BOARD_SIZE, COINS_TO_WIN
+from const import BOARD_SIZE, COINS_TO_WIN, PlayerType
 from trivia import BufferedLogger
 from player import Player
 
-PLAYER_NAME = 'Joe'
+PLAYER1_NAME = 'Joe'
 
 
 class PlayerTests(unittest.TestCase):
 
     def setUp(self):
         self.logger = BufferedLogger()
-        self.player = Player(PLAYER_NAME, self.logger)
+        self.player = Player(PLAYER1_NAME, self.logger, PlayerType.NORMAL)
 
     def test_name(self):
-        self.assertEqual(PLAYER_NAME, self.player.name)
+        self.assertEqual(PLAYER1_NAME, self.player.name)
 
     def test_stepSingle(self):
         self.player.step(2)
@@ -65,7 +65,7 @@ class PlayerTests(unittest.TestCase):
 
     def test_wrongAnswer_playerSentToPenaltyBox(self):
         self.assertFalse(self.player.in_penalty_box)
-        self.player.wrong_answer()
+        self.player.wrong_answer('Question')
         self.assertTrue(self.player.in_penalty_box)
 
     def test_playerGetsOutOfPenaltyBox(self):
