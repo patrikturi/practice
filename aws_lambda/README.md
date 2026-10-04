@@ -80,3 +80,10 @@ lambdas/hello/
 
 - DynamoDB table, env vars, IAM grants on `HelloFunction`
 - Handler reads/writes the table (Powertools + Pydantic still apply)
+
+## Next Steps
+- Use CDK's PythonFunction for package build
+- Add unit tests - with aws-lambda-context and aws-lambda-event fakes
+- Implement Step C)
+- Deploy Step A) in a closer AWS region and test latency
+- Destroy all resources
