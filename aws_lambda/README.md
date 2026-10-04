@@ -1,15 +1,17 @@
-# Learn AWS Lambda with Python CDK (Step A)
+# Learn AWS Lambda with Python CDK (Step B)
 
-Minimal Python 3.14 Lambda deployed with CDK, exposed via a **Function URL**. Tooling: **UV** (Python) + **Volta** (Node for the CDK CLI).
+Python 3.14 Lambda deployed with CDK, exposed via a **Function URL** and an **API Gateway HTTP API**. Runtime uses **aws-lambda-powertools** + **pydantic**, bundled with **UV**. Tooling: **UV** (Python) + **Volta** (Node for the CDK CLI).
 
 ## What you get
 
-- `HelloFunction` construct → owns the Lambda (`python3.14`)
-- `HelloStack` → adds a public Function URL (`AuthType: NONE`) and prints the URL
-- Handler returns HTTP-proxy JSON: `{"message": "Hello from Lambda"}`
+- `HelloFunction` construct → owns the Lambda (`python3.14` / `arm64`), bundles deps via UV
+- `HelloStack` → public Function URL + HTTP API routes `GET|POST /hello`
+- Handler uses Powertools `APIGatewayHttpResolver` + Pydantic body validation on `POST`
 
 ```text
-curl → Function URL → Lambda → CloudWatch Logs
+curl → HTTP API /hello  ┐
+                        ├→ Lambda (Powertools) → CloudWatch Logs
+curl → Function URL/hello ┘
 ```
 
 ## Prerequisites
@@ -24,17 +26,23 @@ curl → Function URL → Lambda → CloudWatch Logs
 ```bash
 cd aws_lambda
 uv python install 3.14
-uv sync
-npm install   # Volta uses Node 24.21.0 from package.json
+uv sync                              # CDK app deps
+uv lock --directory lambdas/hello    # Lambda runtime lockfile (if deps change)
+npm install                          # Volta uses Node 24.21.0 from package.json
 ```
 
 ## Deploy / invoke / destroy
 
 ```bash
 npx cdk bootstrap          # once per account/region
-npx cdk synth              # CloudFormation under cdk.out/
-npx cdk deploy             # note FunctionUrl in the outputs
-curl "<FunctionUrl>"
+npx cdk synth              # CloudFormation under cdk.out/ (UV local-bundles the Lambda)
+npx cdk deploy             # note HttpApiUrl / FunctionUrl in the outputs
+
+curl "<HttpApiUrl>"
+curl -X POST "<HttpApiUrl>" -H 'content-type: application/json' -d '{"name":"Patrik"}'
+
+# Function URL uses the same /hello routes:
+curl "<FunctionUrl>hello"
 npx cdk destroy
 ```
 
@@ -43,34 +51,32 @@ npx cdk destroy
 ## Layout
 
 ```text
-app.py                      CDK App → HelloStack
-cdk.json                    app: uv run python app.py
-pyproject.toml              UV project (aws-cdk-lib, constructs)
-package.json                Volta Node 24.21.0 + aws-cdk CLI
-stacks/hello_stack.py       Function URL + outputs
-cdk_constructs/             HelloFunction (named to avoid shadowing PyPI `constructs`)
-lambdas/hello/handler.py    Runtime code (stdlib only)
+app.py                         CDK App → HelloStack
+cdk.json                       app: uv run python app.py
+pyproject.toml                 UV project (aws-cdk-lib, constructs)
+package.json                   Volta Node 24.21.0 + aws-cdk CLI
+stacks/hello_stack.py          Function URL + HTTP API + outputs
+cdk_constructs/
+  hello_function.py            Lambda + UV bundling
+  uv_local_bundling.py         Local ILocalBundling (no Docker)
+lambdas/hello/
+  handler.py                   Powertools + Pydantic runtime
+  pyproject.toml               aws-lambda-powertools, pydantic
+  uv.lock                      locked Lambda deps
 ```
 
 ## Learning checkpoints
 
-1. **Construct tree:** `App` → `HelloStack` → `HelloFunction` → `Function` → `FunctionUrl`
-2. **UV vs Lambda:** UV runs CDK locally; Lambda runs `handler.py` on AWS with `python3.14`
-3. **Volta’s job:** pins Node for the CDK CLI only—not the Lambda runtime
-4. **Synth vs deploy:** inspect `cdk.out/`, then deploy real resources
-5. **Logs:** after one `curl`, open the function’s CloudWatch log group
+1. **Construct tree:** `App` → `HelloStack` → `HelloFunction` → `Function` → (`FunctionUrl`, `HttpApi`)
+2. **Two Python projects:** root UV env runs CDK; `lambdas/hello` lockfile is what gets packaged
+3. **UV bundling:** `uv export` → `uv pip install --python-platform aarch64-manylinux2014 --target …`
+4. **Powertools resolver:** one handler serves HTTP API and Function URL (payload 2.0)
+5. **Pydantic:** `POST /hello` validates `{"name": "..."}` via `enable_validation=True`
+6. **Logs:** after one `curl`, open the function’s CloudWatch log group
 
-## Upgrade path (not implemented yet)
+## Upgrade path
 
-### B) Practical API + real Lambda deps
-
-- Add API Gateway **HTTP API** (`GET /hello`, optional `POST`) via `HttpLambdaIntegration`
-- Add **aws-lambda-powertools** and **pydantic** to the Lambda asset
-- Bundle deps with UV (packaging lesson deferred from A)
-
-### C) Richer
+### C) Richer (not implemented yet)
 
 - DynamoDB table, env vars, IAM grants on `HelloFunction`
 - Handler reads/writes the table (Powertools + Pydantic still apply)
-
-The handler already uses the HTTP-proxy response shape so Function URL (A) and API Gateway (B) stay compatible.
