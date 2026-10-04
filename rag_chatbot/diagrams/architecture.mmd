@@ -1,0 +1,28 @@
+flowchart TB
+  user[UserBrowser] --> cf[CloudFront_S3_React]
+  cf --> cognito[Cognito_UserPool]
+  cf --> httpApi[API_Gateway_HTTP]
+  cf --> wsApi[API_Gateway_WebSocket]
+
+  httpApi --> authZ[JWT_Authorizer]
+  wsApi --> authZ
+  authZ --> uploadFn[Upload_Lambda]
+  authZ --> historyFn[History_Lambda]
+  authZ --> chatFn[Chat_Lambda]
+
+  uploadFn --> docsBucket[S3_Docs_KMS]
+  docsBucket --> sfn[Step_Functions]
+  sfn --> fargate[Fargate_Spot_PDF_Pipeline]
+  fargate --> bedrockEmbed[Bedrock_Titan_Embed]
+  fargate --> aurora[(Aurora_pgvector)]
+  fargate --> metaDb[(DynamoDB_DocMeta)]
+
+  chatFn --> cache[(DynamoDB_SemanticCache)]
+  chatFn --> aurora
+  chatFn --> bedrockClaude[Bedrock_Claude_Sonnet_5_5]
+  chatFn --> chatDb[(DynamoDB_ChatHistory)]
+  historyFn --> chatDb
+
+  waf[WAF_RateLimit] --> httpApi
+  waf --> wsApi
+  trail[CloudTrail_CloudWatch] --> audit[Audit_Logs_S3]

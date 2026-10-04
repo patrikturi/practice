@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+**/node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build / package artifacts
+frontend/dist/
+backend/lambdas/dist/
+backend/lambdas/dist-tsc/
+terraform/**/build/
+*.zip
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+terraform.tfvars
+*.pem
+/tmp/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*

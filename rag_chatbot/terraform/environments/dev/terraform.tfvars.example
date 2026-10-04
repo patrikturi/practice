@@ -1,0 +1,25 @@
+aws_region            = "us-east-1"
+project               = "ragchat"
+environment           = "dev"
+cognito_domain_prefix = "ragchat-dev-YOURUNIQUE" # must be globally unique
+
+# After CloudFront is created, update these and re-apply:
+cognito_callback_urls = [
+  "http://localhost:5173/callback",
+  "https://YOUR_CLOUDFRONT_DOMAIN/callback"
+]
+cognito_logout_urls = [
+  "http://localhost:5173/",
+  "https://YOUR_CLOUDFRONT_DOMAIN/"
+]
+cors_allow_origins = [
+  "http://localhost:5173",
+  "https://YOUR_CLOUDFRONT_DOMAIN"
+]
+
+claude_model_id = "global.anthropic.claude-sonnet-5-5"
+embed_model_id  = "amazon.titan-embed-text-v2:0"
+
+aurora_min_capacity = 0
+aurora_max_capacity = 4
+enable_nat_gateway  = true
