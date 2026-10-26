@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "knowledge-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/patrik/.patrik/practice/mcp_server",
+        "python",
+        "-m",
+        "knowledge_mcp"
+      ],
+      "env": {
+        "KNOWLEDGE_MCP_DB": "/Users/patrik/.patrik/practice/mcp_server/data/notes.db"
+      }
+    },
+    "knowledge-mcp-http": {
+      "url": "http://127.0.0.1:8000/mcp"
+    }
+  }
+}
